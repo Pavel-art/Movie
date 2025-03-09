@@ -4,13 +4,11 @@ namespace Movie.Core.Models;
 
 public class User
 {
-    private Guid Id { get; set; }
+    public Guid Id { get; private set; }
     public string UserName { get; private set; }
     public string PasswordHash { get; private set; }
     public string Email { get; private set; }
     public Role Role { get; private set; }
-    private ICollection<Rating> Ratings { get; set; }
-    public ICollection<Review> Reviews { get; private set; }
 
     private User(Guid id, string userName, string passwordHash, string email, Role role)
     {
@@ -19,17 +17,38 @@ public class User
         PasswordHash = passwordHash;
         Email = email;
         Role = role;
-        Ratings = new List<Rating>();  
-        Reviews = new List<Review>();  
     }
 
     public static User Create(Guid id, string userName, string passwordHash, string email, Role role)
     {
+        if (id == Guid.Empty)
+            throw new ArgumentException("User id cannot be empty.", nameof(id));
+
+        if (string.IsNullOrWhiteSpace(userName))
+            throw new ArgumentException("User name cannot be empty.", nameof(userName));
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
+
+        if (!Enum.IsDefined(typeof(Role), role))
+            throw new ArgumentException("Invalid role specified.", nameof(role));
+
+        if (string.IsNullOrWhiteSpace(email) || !IsValidEmail(email))
+            throw new ArgumentException("Invalid email format.", nameof(email));
+
         return new User(id, userName, passwordHash, email, role);
     }
 
-    public void AddRating(Rating rating)
+    private static bool IsValidEmail(string email)
     {
-        Ratings.Add(rating);
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

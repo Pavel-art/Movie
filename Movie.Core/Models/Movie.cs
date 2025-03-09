@@ -4,59 +4,97 @@ namespace Movie.Core.Models;
 
 public class Movie
 {
-    private Guid Id { get; set; }
+    public Guid Id { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
     public int Year { get; private set; }
     public Genre Genre { get; private set; }
     public string? PosterUrl { get; private set; }
 
-    public ICollection<Review> Reviews { get; private set; }
+    private readonly List<Rating> _ratings = [];
+    private readonly List<Review> _reviews = [];
 
-    private readonly List<Rating> _ratings = [];      
+    public IReadOnlyCollection<Review> Reviews => _reviews.AsReadOnly();
+    public IReadOnlyCollection<Rating> Ratings => _ratings.AsReadOnly();
 
-    public IReadOnlyCollection<Rating> Ratings => _ratings.AsReadOnly(); 
-
-    private Movie(Guid id, string title, string description, int year, Genre genre, ICollection<Review> reviews)
+    private Movie(Guid id, string title, string description, int year, Genre genre, string posterUrl)
     {
-        Id = id;
+        Id = Guid.NewGuid();
         Title = title;
         Description = description;
         Year = year;
         Genre = genre;
-        Reviews = reviews;
     }
 
-    public static Movie Create(string title, string description, int year, Genre genre, ICollection<Review> reviews)
+    public static Movie Create(string title, string description, int year, Genre genre, string posterUrl)
     {
-        return new Movie(Guid.NewGuid(), title, description, year, genre, reviews);
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty.", nameof(title));
+
+        if (title.Length > 200)
+            throw new ArgumentException("Title must be less than 200 characters.", nameof(title));
+
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Description cannot be empty.", nameof(description));
+
+        if (year < 1888 || year > DateTime.UtcNow.Year)
+            throw new ArgumentOutOfRangeException(nameof(year), "Year must be valid.");
+
+        if (!Enum.IsDefined(typeof(Genre), genre))
+            throw new ArgumentException("Invalid genre.", nameof(genre));
+
+        if (string.IsNullOrWhiteSpace(posterUrl) || !Uri.TryCreate(posterUrl, UriKind.Absolute, out _))
+            throw new ArgumentException("Poster URL must be a valid absolute URL.", nameof(posterUrl));
+
+        return new Movie(Guid.NewGuid(), title, description, year, genre, posterUrl);
     }
 
-    public void AddRating(Rating rating)
+    public void AddReview(string title, string content)
     {
-        // Проверка, что фильм существует
-        if (rating.MovieId != Id)
-        {
-            throw new ArgumentException("The rating movie ID does not match the current movie.");
-        }
+        var review = Review.Create(content, title);
+        _reviews.Add(review);
+    }
 
+
+    public void AddRating(Guid userId, int score)
+    {
+        var rating = Rating.Create(Guid.NewGuid(), userId, score);
         _ratings.Add(rating);
     }
 
-    public double GetAverageRating()
-    {
-        if (_ratings.Count == 0)
-            return 0; 
+    public double GetAverageRating() => _ratings.Count == 0 ? 0 : _ratings.Average(r => r.Score);
 
-        return _ratings.Average(r => r.Score); 
+    public void UpdateTitle(string newTitle)
+    {
+        if (string.IsNullOrWhiteSpace(newTitle))
+            throw new ArgumentException("Title cannot be empty.", nameof(newTitle));
+
+        if (newTitle.Length > 200)
+            throw new ArgumentException("Title must be less than 200 characters.", nameof(newTitle));
+
+        Title = newTitle;
     }
 
-    public double GetAverageRatingExcludingUser(Guid userId)
+    public void UpdateDescription(string newDescription)
     {
-        var ratingsExcludingUser = _ratings.Where(r => r.UserId != userId).ToList();
-        if (ratingsExcludingUser.Count == 0)
-            return 0;
+        if (string.IsNullOrWhiteSpace(newDescription))
+            throw new ArgumentException("Description cannot be empty.", nameof(newDescription));
 
-        return ratingsExcludingUser.Average(r => r.Score); 
+        Description = newDescription;
+    }
+
+    public void UpdateGenre(Genre newGenre)
+    {
+        if (!Enum.IsDefined(typeof(Genre), newGenre))
+            throw new ArgumentException("Invalid genre.", nameof(newGenre));
+        Genre = newGenre;
+    }
+
+    public void UpdatePosterUrl(string newUrl)
+    {
+        if (string.IsNullOrWhiteSpace(newUrl) || !Uri.TryCreate(newUrl, UriKind.Absolute, out _))
+            throw new ArgumentException("Poster URL must be a valid absolute URL.", nameof(newUrl));
+        
+        PosterUrl = newUrl;
     }
 }

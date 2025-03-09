@@ -1,31 +1,31 @@
-﻿namespace Movie.Core.Models;
+﻿using ArgumentException = System.ArgumentException;
+
+namespace Movie.Core.Models;
 
 public class Review
 {
     public Guid Id { get; private set; }
     public string Title { get; private set; }
     public string Content { get; private set; }
-    public DateTime Date { get; private set; }
-    
-    public Guid MovieId { get; private set; }
-    public Movie Movie { get; private set; }
-    
-    public Guid UserId { get; set; }
-    
-    public User User { get; private set; }
 
-    private Review(Guid id, string content, DateTime date, string title, Movie movie, User user)
+    public DateTime Date { get; private set; }
+
+    private Review(string title, string content)
     {
-        Id = id;
+        Id = Guid.NewGuid();
         Content = content;
         Title = title;
-        Movie = movie;
-        User = user;
-        Date = date;
+        Date = DateTime.UtcNow;
     }
 
-    public static Review Create(Guid id, string content, DateTime date, string title, Movie movie, User user)
+    public static Review Create(string content, string title)
     {
-        return new Review(id, content, date, title, movie, user);
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty.", nameof(title));
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("Content cannot be empty.", nameof(content));
+
+        return new Review(title, content);
     }
 }
