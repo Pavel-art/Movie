@@ -2,7 +2,7 @@
 
 namespace Movie.Core.Models;
 
-public class User
+public class UserModel
 {
     public Guid Id { get; private set; }
     public string UserName { get; private set; }
@@ -10,7 +10,7 @@ public class User
     public string Email { get; private set; }
     public Role Role { get; private set; }
 
-    private User(Guid id, string userName, string passwordHash, string email, Role role)
+    private UserModel(Guid id, string userName, string passwordHash, string email, Role role)
     {
         Id = id;
         UserName = userName;
@@ -19,7 +19,7 @@ public class User
         Role = role;
     }
 
-    public static User Create(Guid id, string userName, string passwordHash, string email, Role role)
+    public static UserModel Create(Guid id, string userName, string passwordHash, string email, Role role)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("User id cannot be empty.", nameof(id));
@@ -30,13 +30,13 @@ public class User
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
 
-        if (!Enum.IsDefined(typeof(Role), role))
+        if (!Enum.IsDefined(role))
             throw new ArgumentException("Invalid role specified.", nameof(role));
 
         if (string.IsNullOrWhiteSpace(email) || !IsValidEmail(email))
             throw new ArgumentException("Invalid email format.", nameof(email));
 
-        return new User(id, userName, passwordHash, email, role);
+        return new UserModel(id, userName, passwordHash, email, role);
     }
 
     private static bool IsValidEmail(string email)

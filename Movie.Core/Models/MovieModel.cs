@@ -2,7 +2,7 @@
 
 namespace Movie.Core.Models;
 
-public class Movie
+public class MovieModel
 {
     public Guid Id { get; private set; }
     public string Title { get; private set; }
@@ -11,13 +11,13 @@ public class Movie
     public Genre Genre { get; private set; }
     public string? PosterUrl { get; private set; }
 
-    private readonly List<Rating> _ratings = [];
-    private readonly List<Review> _reviews = [];
+    private readonly List<RatingModel> _ratings = [];
+    private readonly List<ReviewModel> _reviews = [];
 
-    public IReadOnlyCollection<Review> Reviews => _reviews.AsReadOnly();
-    public IReadOnlyCollection<Rating> Ratings => _ratings.AsReadOnly();
+    public IReadOnlyCollection<ReviewModel> Reviews => _reviews.AsReadOnly();
+    public IReadOnlyCollection<RatingModel> Ratings => _ratings.AsReadOnly();
 
-    private Movie(Guid id, string title, string description, int year, Genre genre, string posterUrl)
+    private MovieModel(Guid id, string title, string description, int year, Genre genre, string posterUrl)
     {
         Id = Guid.NewGuid();
         Title = title;
@@ -26,7 +26,7 @@ public class Movie
         Genre = genre;
     }
 
-    public static Movie Create(string title, string description, int year, Genre genre, string posterUrl)
+    public static MovieModel Create(string title, string description, int year, Genre genre, string posterUrl)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title cannot be empty.", nameof(title));
@@ -46,19 +46,19 @@ public class Movie
         if (string.IsNullOrWhiteSpace(posterUrl) || !Uri.TryCreate(posterUrl, UriKind.Absolute, out _))
             throw new ArgumentException("Poster URL must be a valid absolute URL.", nameof(posterUrl));
 
-        return new Movie(Guid.NewGuid(), title, description, year, genre, posterUrl);
+        return new MovieModel(Guid.NewGuid(), title, description, year, genre, posterUrl);
     }
 
     public void AddReview(string title, string content)
     {
-        var review = Review.Create(content, title);
+        var review = ReviewModel.Create(content, title);
         _reviews.Add(review);
     }
 
 
     public void AddRating(Guid userId, int score)
     {
-        var rating = Rating.Create(Guid.NewGuid(), userId, score);
+        var rating = RatingModel.Create(Guid.NewGuid(), userId, score);
         _ratings.Add(rating);
     }
 
@@ -85,7 +85,7 @@ public class Movie
 
     public void UpdateGenre(Genre newGenre)
     {
-        if (!Enum.IsDefined(typeof(Genre), newGenre))
+        if (!Enum.IsDefined(newGenre))
             throw new ArgumentException("Invalid genre.", nameof(newGenre));
         Genre = newGenre;
     }
