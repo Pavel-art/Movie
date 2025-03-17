@@ -1,11 +1,11 @@
 ﻿namespace Movie.Core.Models;
 
-public class Rating
+public class RatingModel
 {
     public Guid Id { get; private set; }
     public int Score { get; private set; }
 
-    private Rating(int score)
+    private RatingModel(int score)
     {
         Id = Guid.NewGuid();
         SetRating(score);
@@ -21,11 +21,11 @@ public class Rating
         Score = score;
     }
 
-    public static Rating Create(Guid movieId, Guid userId, int score)
+    public static RatingModel Create(Guid movieId, Guid userId, int score)
     {
         if (score is < 0 or > 10)
             throw new ArgumentOutOfRangeException(nameof(score), "Score must be between 0 and 10.");
 
-        return new Rating(score);
+        return new RatingModel(score);
     }
 }
