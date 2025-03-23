@@ -12,6 +12,6 @@ public class MovieEntity
     public Genre Genre { get; set; }
     public string? PosterUrl { get; set; }
     
-    public List<RatingEntity> Ratings { get; set; } = [];
-    public List<ReviewEntity> Reviews { get; set; } = [];
+    public ICollection<RatingEntity>  Ratings { get; set; } = [];
+    public ICollection<ReviewEntity> Reviews { get; set; } = [];
 }
