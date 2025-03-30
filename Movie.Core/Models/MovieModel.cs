@@ -9,7 +9,7 @@ public class MovieModel
     public string Description { get; private set; }
     public int Year { get; private set; }
     public Genre Genre { get; private set; }
-    public string? PosterUrl { get; private set; }
+    public string?PosterUrl { get; private set; }
 
     private readonly List<RatingModel> _ratings = [];
     private readonly List<ReviewModel> _reviews = [];
@@ -17,7 +17,7 @@ public class MovieModel
     public IReadOnlyCollection<ReviewModel> Reviews => _reviews.AsReadOnly();
     public IReadOnlyCollection<RatingModel> Ratings => _ratings.AsReadOnly();
 
-    private MovieModel(Guid id, string title, string description, int year, Genre genre, string posterUrl)
+    public MovieModel(Guid id, string title, string description, int year, Genre genre, string posterUrl)
     {
         Id = Guid.NewGuid();
         Title = title;

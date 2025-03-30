@@ -25,7 +25,9 @@ public class UserConfigurations : IEntityTypeConfiguration<UserEntity>
             .IsRequired();
         
         builder.Property(u => u.Role)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50);
 
         builder.HasMany(u => u.Ratings)
             .WithOne(r => r.User)
